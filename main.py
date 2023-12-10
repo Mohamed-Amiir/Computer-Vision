@@ -1,6 +1,7 @@
 import os
 import cv2
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics import accuracy_score
 from sklearn.svm import SVC
 import tkinter as tk
 from PIL import ImageTk, Image
@@ -71,11 +72,24 @@ for category_folder in os.listdir("Product Classification"):
         img_data = extract_features(os.path.join(category_path, "Validation", img_path))
         validation_data.append(img_data)
         validation_labels.append(category_label)
+def calculate_accuracy():
+    model = SVC(kernel="linear")
+    model.fit(train_data, train_labels)
+    # Perform predictions on validation data
+    validation_predictions = model.predict(validation_data)
+
+    # Calculate accuracy
+    accuracy = accuracy_score(validation_labels, validation_predictions)
+    label_accuracy["text"] = f"Accuracy: {accuracy}"
 
 # Train SVM model
 model = SVC(kernel="linear")
 model.fit(train_data, train_labels)
+# Perform predictions on validation data
+validation_predictions = model.predict(validation_data)
 
+# Calculate accuracy
+accuracy = accuracy_score(validation_labels, validation_predictions)
 # # accuracy = accuracy_score(y_val, y_pred)
 # print("Validation Accuracy (Part A):", accuracy)
 #Create main window
@@ -120,14 +134,18 @@ button_classify = tk.Button(root, text="Classify",height=3,width=12,bg= rgb_to_h
 button_classify.place(x=579,y=176)
 #button_classify.pack()
 
+button_accuracy = tk.Button(root, text="Accuracy",height=2,width=10,bg= rgb_to_hex(rgb_tuple), fg="white", command=calculate_accuracy)
+button_accuracy.place(x=457,y=140)
+#button_classify.pack()
+
 
 # Create label to display prediction result
 label_result = tk.Label(root, text="",height=2,width=26,bg= "white", fg="black")
 label_result.place(x=495,y=503)
 #label_result.pack()
 
-# label_accuracy = tk.Label(root, text="")
-# label_accuracy.place(x=300,y=300)
+label_accuracy = tk.Label(root, text="",bg= "white", fg="black")
+label_accuracy.place(x=490,y=468)
 # #label_accuracy.pack()
 
 # Run the main loop
