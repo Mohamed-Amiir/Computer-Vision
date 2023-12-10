@@ -46,7 +46,7 @@ def browse_file():
     entry_path.insert(0, filename)
 
 
-# Initialize empty lists for training and validation data
+#Initialize empty lists for training and validation data
 train_data = []
 train_labels = []
 validation_data = []
@@ -74,16 +74,18 @@ for category_folder in os.listdir("Product Classification"):
 model = SVC(kernel="linear")
 model.fit(train_data, train_labels)
 
-# accuracy = accuracy_score(y_val, y_pred)
+# # accuracy = accuracy_score(y_val, y_pred)
 # print("Validation Accuracy (Part A):", accuracy)
-# Create main window
+#Create main window
 root = tk.Tk()
-root.geometry("600x500")
+root.geometry("700x600")
+root.resizable(width=False, height=False)
+
 root.title("Product Classification")
 # Provide the absolute path to your image file
 image_path = r"C:\Users\lenovo\Desktop\My-Github\Computer-Vision\img2.jpeg"
 
-photo = resize_image(image_path, width=600, height=500)
+photo = resize_image(image_path, width=700, height=600)
 
 
 label = tk.Label(root, image=photo)
@@ -93,28 +95,38 @@ label.place(x=0, y=0, relwidth=1, relheight=1)  # Fit the label to the window si
 
 
 # Create input field for image path
-label_path = tk.Label(root, text="Image Path:")
-label_path.pack()
+# label_path = tk.Label(root, text="Image Path:")
+# label_path.place(x=300,y=10)
+# label_path.grid(row=0, column=1, padx=10, pady=10)
+#label_path.pack()
 
 constant_value = tk.StringVar(value="")
 entry_path = tk.Entry(root,textvariable=constant_value, width=50)
-entry_path.pack()
+entry_path.place(x=800,y=20)
+#entry_path.pack()
 
 # Create button to browse for image
-button_browse = tk.Button(root, text="Browse...",height=2,width=10, command=browse_file)
-button_browse.pack()
+#button_browse = tk.Button(root, text="Browse...",height=2,width=10)
+button_browse = tk.Button(root, text="Browse...",height=2,width=10,command=browse_file)
+button_browse.place(x=567,y=100)
+
+#button_browse.pack()
 
 # Create button to classify image
+#button_classify = tk.Button(root, text="Classify",height=2,width=10)
 button_classify = tk.Button(root, text="Classify",height=2,width=10, command=lambda: classify_image(entry_path.get()))
-button_classify.pack()
+button_classify.place(x=545,y=167)
+#button_classify.pack()
 
 
 # Create label to display prediction result
-label_result = tk.Label(root, text="")
-label_result.pack()
+label_result = tk.Label(root, text="",height=2,width=25)
+label_result.place(x=458,y=463)
+#label_result.pack()
 
-label_accuracy = tk.Label(root, text="")
-label_accuracy.pack()
+# label_accuracy = tk.Label(root, text="")
+# label_accuracy.place(x=300,y=300)
+# #label_accuracy.pack()
 
 # Run the main loop
 root.mainloop()
