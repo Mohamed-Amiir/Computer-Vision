@@ -1,2 +1,2 @@
-model = SVC(kernel="linear")
-# model.fit(train_data, train_labels)
+# accuracy = accuracy_score(y_val, y_pred)
+# # print("Validation Accuracy (Part A):", accuracy)
