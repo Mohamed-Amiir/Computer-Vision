@@ -1,96 +1,125 @@
 import os
 import cv2
-import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
-
-#part A product classification 
-# Load and preprocess the dataset
-categories = []
-for i in range(1,21):
-    categories.append(str(i))
-# categories = ['1', '2', '3', ...]  # Replace with your product names
-data = []
-labels = []
-
-for category in categories:
-    train_folder_path = f'Data\Product Classification\{category}\Train'
-    for image_name in os.listdir(train_folder_path):
-        image_path = os.path.join(train_folder_path, image_name)
-        image = cv2.imread(image_path)
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        resized = cv2.resize(gray, (64, 128))
-        data.append(resized)
-        labels.append(category)
-
-# Extract HOG features
-hog = cv2.HOGDescriptor()
-features = []
-for image in data:
-    hog_features = hog.compute(image)
-    features.append(hog_features.flatten())
-
-# Split the dataset into training and validation sets
-X_train, X_val, y_train, y_val = train_test_split(features, labels, test_size=0.2, random_state=42)
-
-#Train the classification model
-model = SVC()
-model.fit(X_train, y_train)
-
-# Evaluate the model on validation data
-y_pred = model.predict(X_val)
-accuracy = accuracy_score(y_val, y_pred)
-print("Validation Accuracy (Part A):", accuracy)
+import tkinter as tk
+from PIL import ImageTk, Image
+from tkinter import filedialog, ttk
 
 
 
-# #part B Product Verification/Recognition
-# # Load and preprocess the dataset
-# categories = ['product1', 'product2', 'product3', ...]  # Replace with your product names
-# data = []
-# labels = []
+# def extract_features(img_path):
+#     # Load image
+#     img = cv2.imread(img_path)
 
-# for category in categories[:40]:  # Use the first 40 products for training
-#     train_folder_path = f'dataset/train/{category}/'
-#     for image_name in os.listdir(train_folder_path):
-#         image_path = os.path.join(train_folder_path, image_name)
-#         image = cv2.imread(image_path)
-#         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-#         resized = cv2.resize(gray, (64, 128))
-#         data.append(resized)
-#         labels.append(category)
+#     # Convert to grayscale and resize
+#     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+#     img_resized = cv2.resize(img_gray, (128, 128))
 
-# # Extract HOG features
-# hog = cv2.HOGDescriptor()
-# features = []
-# for image in data:
-#     hog_features = hog.compute(image)
+#     # Extract features using FeatureHasher
+#     hog = cv2.HOGDescriptor()
+#     hog_features = hog.compute(img_resized)
 #     features.append(hog_features.flatten())
 
-# #Train the classification model for one/few shot learning
-# model = SVC()
-# model.fit(features, labels)
+#     return features.toarray()[0]
+def extract_features(img_path):
+    # Load image and convert to grayscale
+    img = cv2.imread(img_path)
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img_resized = cv2.resize(img_gray, (128, 128))
 
-# # Evaluate the model on validation data
-# val_data = []
-# val_labels = []
+    # Create HoG descriptor
+    hog = cv2.HOGDescriptor()
 
-# for category in categories[40:]:  # Use the remaining 20 products for validation
-#     val_folder_path = f'dataset/validation/{category}/'
-#     for image_name in os.listdir(val_folder_path):
-#         image_path = os.path.join(val_folder_path, image_name)
-#         image = cv2.imread(image_path)
-#         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-#         resized = cv2.resize(gray, (64, 128))
-#         val_data.append(resized)
-#         val_labels.append(category)
+    # Extract features
+    features = hog.compute(img_resized)
 
-# val_features = []
-# for image in val_data:
-#     hog_features = hog.compute(image)
-#     val_features.append(hog_features.flatten())
+    return features
 
-# y_pred = model.predict(val_features)
-# accuracy = accuracy_score(val_labels, y_pred)
-# print("Validation Accuracy (Part B):", accuracy)
+def update_result(predicted_label):
+    label_result["text"] = f"Predicted Category: {predicted_label}"
+def calculate_similarity(img_1_path, img_2_path):
+    features_1 = extract_features(img_1_path)
+    features_2 = extract_features(img_2_path)
+
+    # Calculate cosine similarity
+    similarity = cosine_similarity(features_1.reshape(1, -1), features_2.reshape(1, -1))
+
+    return similarity[0][0]
+
+
+# Use HoG features for classification
+def classify_image(img_path):
+    features = extract_features(img_path)
+
+    # Predict category using the trained model
+    predicted_label = model.predict([features])[0]
+
+    update_result(predicted_label)
+
+
+def browse_file():
+    # Open file selection dialog
+    filename = filedialog.askopenfilename(title="Select Image")
+
+    # Update entry with path
+    entry_path.delete(0, tk.END)
+    entry_path.insert(0, filename)
+
+
+# Initialize empty lists for training and validation data
+train_data = []
+train_labels = []
+validation_data = []
+validation_labels = []
+
+# Loop through each category folder
+# Loop through each category folder
+for category_folder in os.listdir("Product Classification"):
+    category_path = os.path.join("Product Classification", category_folder)
+    category_label = int(category_folder)
+
+    # Load train data
+    for img_path in os.listdir(os.path.join(category_path, "Train")):
+        img_data = extract_features(os.path.join(category_path, "Train", img_path))
+        train_data.append(img_data)
+        train_labels.append(category_label)
+
+    # Load validation data
+    for img_path in os.listdir(os.path.join(category_path, "Validation")):
+        img_data = extract_features(os.path.join(category_path, "Validation", img_path))
+        validation_data.append(img_data)
+        validation_labels.append(category_label)
+
+# Train SVM model
+model = SVC(kernel="linear")
+model.fit(train_data, train_labels)
+
+# Create main window
+root = tk.Tk()
+root.title("Product Classification")
+
+# Create input field for image path
+label_path = tk.Label(root, text="Image Path:")
+label_path.pack()
+
+constant_value = tk.StringVar(value="")
+entry_path = tk.Entry(root,textvariable=constant_value, width=50)
+entry_path.pack()
+
+# Create button to browse for image
+button_browse = tk.Button(root, text="Browse...", command=browse_file)
+button_browse.pack()
+
+# Create button to classify image
+button_classify = tk.Button(root, text="Classify", command=lambda: classify_image(entry_path.get()))
+button_classify.pack()
+
+
+# Create label to display prediction result
+label_result = tk.Label(root, text="")
+label_result.pack()
+
+# Run the main loop
+root.mainloop()
+
