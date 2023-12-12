@@ -80,7 +80,7 @@ def calculate_accuracy():
 
     # Calculate accuracy
     accuracy = accuracy_score(validation_labels, validation_predictions)
-    label_accuracy["text"] = f"Accuracy: {accuracy}"
+    label_accuracy["text"] = f"Accuracy: %{accuracy*100}"
 
 # Train SVM model
 model = SVC(kernel="linear")
@@ -144,7 +144,7 @@ label_result = tk.Label(root, text="",height=2,width=26,bg= "white", fg="black")
 label_result.place(x=495,y=503)
 #label_result.pack()
 
-label_accuracy = tk.Label(root, text="",bg= "white", fg="black")
+label_accuracy = tk.Label(root, text="",bg= "green", fg="white")
 label_accuracy.place(x=490,y=468)
 # #label_accuracy.pack()
 
