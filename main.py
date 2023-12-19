@@ -1,11 +1,14 @@
 import os
 import cv2
+import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics import accuracy_score
 from sklearn.svm import SVC
 import tkinter as tk
 from PIL import ImageTk, Image
 from tkinter import filedialog, ttk
+
+
 def resize_image(image_path, width, height):
     original_image = Image.open(image_path)
     resized_image = original_image.resize((width, height))
@@ -13,6 +16,11 @@ def resize_image(image_path, width, height):
 def rgb_to_hex(rgb):
     """Convert RGB tuple to hexadecimal color code."""
     return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
+
+
+
+
+
 def extract_features(img_path):
     # HoG 
     img = cv2.imread(img_path)
@@ -21,6 +29,10 @@ def extract_features(img_path):
     hog = cv2.HOGDescriptor()
     features = hog.compute(img_resized)
     return features
+
+
+
+
 
 
 def calculate_similarity(img_1_path, img_2_path):
@@ -55,15 +67,19 @@ train_labels = []
 validation_data = []
 validation_labels = []
 
-# Loop through each category folder
-# Loop through each category folder
+
+
+
+
+
+###################  LOADING DATA  #####################
 for category_folder in os.listdir("Product Classification"):
     category_path = os.path.join("Product Classification", category_folder)
     category_label = int(category_folder)
 
     # Load train data
-    for img_path in os.listdir(os.path.join(category_path, "Train")):
-        img_data = extract_features(os.path.join(category_path, "Train", img_path))
+    for img_path in os.listdir(os.path.join(category_path, "augmented_train")):
+        img_data = extract_features(os.path.join(category_path, "augmented_train", img_path))
         train_data.append(img_data)
         train_labels.append(category_label)
 
@@ -72,6 +88,7 @@ for category_folder in os.listdir("Product Classification"):
         img_data = extract_features(os.path.join(category_path, "Validation", img_path))
         validation_data.append(img_data)
         validation_labels.append(category_label)
+
 def calculate_accuracy():
     model = SVC(kernel="linear")
     model.fit(train_data, train_labels)
@@ -83,13 +100,13 @@ def calculate_accuracy():
     label_accuracy["text"] = f"Accuracy: %{accuracy*100}"
 
 # Train SVM model
-model = SVC(kernel="linear")
-model.fit(train_data, train_labels)
-# Perform predictions on validation data
-validation_predictions = model.predict(validation_data)
+# model = SVC(kernel="linear")
+# model.fit(train_data, train_labels)
+# # Perform predictions on validation data
+# validation_predictions = model.predict(validation_data)
 
-# Calculate accuracy
-accuracy = accuracy_score(validation_labels, validation_predictions)
+# # Calculate accuracy
+# accuracy = accuracy_score(validation_labels, validation_predictions)
 # # accuracy = accuracy_score(y_val, y_pred)
 # print("Validation Accuracy (Part A):", accuracy)
 #Create main window

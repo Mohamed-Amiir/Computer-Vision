@@ -1,94 +1,58 @@
 import os
 import cv2
-from sklearn.metrics import accuracy_score
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.svm import SVC
-import tkinter as tk
-from PIL import ImageTk, Image
-from tkinter import filedialog, ttk
+import numpy as np
 
+# Input and output folders
+input_folder = "C:\\Users\\lenovo\\Desktop\\My-Github\\Computer-Vision\\Product Classification\\1\\Train"
+output_folder = "C:\\Users\\lenovo\\Desktop\\My-Github\\Computer-Vision\\Product Classification\\1\\Train"
+# Create the output folder if it doesn't exist
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
-def resize_image(image_path, width, height):
-    original_image = Image.open(image_path)
-    resized_image = original_image.resize((width, height))
-    return ImageTk.PhotoImage(resized_image)
+# Data augmentation function
+def apply_augmentation(image):
+    # Randomly crop the image
+    crop_fraction = np.random.uniform(0.8, 1.0)
+    height, width = image.shape[:2]
+    h_crop = int(height * crop_fraction)
+    w_crop = int(width * crop_fraction)
+    start_h = np.random.randint(0, height - h_crop + 1)
+    start_w = np.random.randint(0, width - w_crop + 1)
+    image = image[start_h:start_h + h_crop, start_w:start_w + w_crop]
 
+    # Randomly adjust brightness and contrast
+    alpha = 1.0 + np.random.uniform(-0.2, 0.2)
+    beta = np.random.uniform(-20, 20)
+    image = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
 
-def rgb_to_hex(rgb):
-    """Convert RGB tuple to hexadecimal color code."""
-    return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
+    # Randomly adjust saturation
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    saturation_scale = np.random.uniform(0.5, 1.5)
+    hsv[:, :, 1] = np.clip(hsv[:, :, 1] * saturation_scale, 0, 255)
+    image = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
+    # Randomly rotate the image
+    angle = np.random.uniform(-10, 10)
+    rotation_matrix = cv2.getRotationMatrix2D((width / 2, height / 2), angle, 1)
+    image = cv2.warpAffine(image, rotation_matrix, (width, height), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
 
-def extract_features(img_path):
-    # HoG
-    img = cv2.imread(img_path)
-    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    img_resized = cv2.resize(img_gray, (128, 128))
-    hog = cv2.HOGDescriptor()
-    features = hog.compute(img_resized)
-    return features
+    return image
+# Iterate over each image in the input folder
+for filename in os.listdir(input_folder):
+    if filename.endswith(('.jpg', '.jpeg', '.png')):
+        # Load the original image
+        image_path = os.path.join(input_folder, filename)
+        original_image = cv2.imread(image_path)
 
+        # Apply data augmentation to generate augmented images
+        num_augmented_images = 5  # Adjust the number of augmented images as needed
+        augmented_images = [apply_augmentation(original_image) for _ in range(num_augmented_images)]
 
-def calculate_similarity(img_1_path, img_2_path):
-    features_1 = extract_features(img_1_path)
-    features_2 = extract_features(img_2_path)
-    similarity = cosine_similarity(features_1.reshape(1, -1), features_2.reshape(1, -1))
+        # Save augmented images to the output folder
+        base_name, extension = os.path.splitext(filename)
+        for i, augmented_image in enumerate(augmented_images):
+            output_filename = f"{base_name}_aug_{i + 1}{extension}"
+            output_path = os.path.join(output_folder, output_filename)
+            cv2.imwrite(output_path, augmented_image)
 
-    return similarity[0][0]
-
-
-# Use HoG features for classification
-def classify_image(img_path):
-    features = extract_features(img_path)
-
-    # Predict category using the trained model
-    predicted_label = model.predict([features])[0]
-
-    label_result["text"] = f"Predicted Category: {predicted_label}"
-
-
-def browse_file():
-    # Open file selection dialog
-    filename = filedialog.askopenfilename(title="Select Image")
-
-    # Update entry with path
-    entry_path.delete(0, tk.END)
-    entry_path.insert(0, filename)
-
-
-# Initialize empty lists for training and validation data
-train_data = []
-train_labels = []
-validation_data = []
-validation_labels = []
-
-# Loop through each category folder
-for category_folder in os.listdir("Product Classification"):
-    category_path = os.path.join("Product Classification", category_folder)
-    category_label = int(category_folder)
-
-    # Load train data
-    for img_path in os.listdir(os.path.join(category_path, "Train")):
-        img_data = extract_features(os.path.join(category_path, "Train", img_path))
-        train_data.append(img_data)
-        train_labels.append(category_label)
-
-    # Load validation data
-    for img_path in os.listdir(os.path.join(category_path, "Validation")):
-        img_data = extract_features(os.path.join(category_path, "Validation", img_path))
-        validation_data.append(img_data)
-        validation_labels.append(category_label)
-
-# Train SVM model
-model = SVC(kernel="linear")
-model.fit(train_data, train_labels)
-
-# Perform predictions on validation data
-validation_predictions = model.predict(validation_data)
-
-# Calculate accuracy
-accuracy = accuracy_score(validation_labels, validation_predictions)
-print("Validation Accuracy:", accuracy)
-
-# Create main window
-root = tk.Tk()
+print("Data augmentation completed.")
