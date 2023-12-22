@@ -91,9 +91,9 @@ def calculate_accuracy():
 
     test_accuracy = accuracy_score(validation_labels, test_predictions)
 
-    label_accuracy["text"] = f"Test Accuracy: %{test_accuracy*100}"
-    label_crossAccuracy["text"] = f"Cross Validation Accuracy: %{svm_train_accuracy*100}"
-    label_trainAccuracy["text"] = f"Train Accuracy: %{train_accuracy*100}"
+    label_accuracy["text"] = f"Test Accuracy: %{test_accuracy*100:.2f}"
+    label_crossAccuracy["text"] = f"Cross Validation Accuracy: %{svm_train_accuracy*100:.2f}.2f"
+    label_trainAccuracy["text"] = f"Train Accuracy: %{train_accuracy*100:.2f}"
 
     #return train_accuracy, test_accuracy
 
@@ -132,8 +132,8 @@ for category_folder in os.listdir("Product Classification"):
     category_label = int(category_folder)
 
     # Load train data
-    for img_path in os.listdir(os.path.join(category_path, "Train")):
-        img_data = extract_features(os.path.join(category_path, "Train", img_path))
+    for img_path in os.listdir(os.path.join(category_path, "augmented_train")):
+        img_data = extract_features(os.path.join(category_path, "augmented_train", img_path))
         train_data.append(img_data)
         train_labels.append(category_label)
 
