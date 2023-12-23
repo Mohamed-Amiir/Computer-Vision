@@ -92,7 +92,7 @@ def calculate_accuracy():
     test_accuracy = accuracy_score(validation_labels, test_predictions)
 
     label_accuracy["text"] = f"Test Accuracy: %{test_accuracy*100:.2f}"
-    label_crossAccuracy["text"] = f"Cross Validation Accuracy: %{svm_train_accuracy*100:.2f}.2f"
+    label_crossAccuracy["text"] = f"Cross Validation Accuracy: %{svm_train_accuracy*100:.2f}"
     label_trainAccuracy["text"] = f"Train Accuracy: %{train_accuracy*100:.2f}"
 
     #return train_accuracy, test_accuracy

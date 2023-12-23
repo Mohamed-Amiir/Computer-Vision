@@ -3,8 +3,7 @@ import cv2
 import numpy as np
 
 
-
-def apply_augmentation(image, crop_fraction=None, brightness_alpha=None, brightness_beta=None, saturation_scale=None, rotate_angle=None, blur_prob=None, blur_kernel_size=None):
+def apply_augmentation(image, crop_fraction=None, brightness_alpha=None, brightness_beta=None, saturation_scale=None, rotate_angle=None, blur_prob=None, blur_kernel_size=None, scale_factor=None):
     augmented_images = []
     augmented_images.append(image)
 
@@ -46,6 +45,14 @@ def apply_augmentation(image, crop_fraction=None, brightness_alpha=None, brightn
             blurred_image = cv2.GaussianBlur(image, (blur_kernel_size, blur_kernel_size), 0)
             augmented_images.append(blurred_image)
 
+    # Scale the image
+    if scale_factor is not None:
+        height, width = image.shape[:2]
+        new_height = int(height * scale_factor)
+        new_width = int(width * scale_factor)
+        scaled_image = cv2.resize(image, (new_width, new_height))
+        augmented_images.append(scaled_image)
+
     return augmented_images
 
 
@@ -81,11 +88,12 @@ for category_folder in range(1, 21):
                     augmented_images = apply_augmentation(original_image,
                                       crop_fraction=0.7,
                                       brightness_alpha=1.2,
-                                      brightness_beta=10,
+                                      brightness_beta=2,
                                       saturation_scale=1.5,
                                       rotate_angle=30,
                                       blur_prob=1.2,
-                                      blur_kernel_size=3)
+                                      blur_kernel_size=3,
+                                      scale_factor=.5)
 
                     # Save augmented images to the "augmented_train" folder
                     base_name, extension = os.path.splitext(filename)
