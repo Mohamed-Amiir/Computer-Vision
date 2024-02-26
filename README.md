@@ -1,5 +1,5 @@
 # Product Classification with Computer Vision
-![img](program.png)
+<img src="program.png" alt="Alt text" style="height: 400px;">
 This repository contains a Python program for product classification using a classical computer vision model. The purpose of this project is to classify products into specific categories based on images provided.
 
 ## Overview
